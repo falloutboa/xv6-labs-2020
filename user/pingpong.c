@@ -5,29 +5,28 @@
 int
 main(int argc, char *argv[])
 {
-	int p[2];
+	int p2c[2];
+	int c2p[2];
 	char buf[64];
-	char buf2[64];
-	pipe(p);
+	pipe(p2c);
+	pipe(c2p);
 	
-	int pid, status;
-	pid = fork();
-	if (pid == 0) {
-		int n = read(p[0], buf2, sizeof(buf2));
-		close(p[0]);
-		buf2[n] = '\0';
-		printf("%d: received %s\n", pid, buf2);
-		write(p[1], "pong", 4);
-		close(p[1]);
+	if (fork() == 0) {
+		int n = read(p2c[0], buf, sizeof(buf));
+		close(p2c[0]);
+		buf[n] = '\0';
+		printf("%d: received %s\n", getpid(), buf);
+		write(c2p[1], "pong", 4);
+		close(c2p[1]);
 		exit(0);
 	} else {
-		write(p[1], "ping", 4);
-		close(p[1]);
-		wait(&status);
-		int n = read(p[0], buf, sizeof(buf));
-		close(p[0]);
+		write(p2c[1], "ping", 4);
+		close(p2c[1]);
+		wait(0);
+		int n = read(c2p[0], buf, sizeof(buf));
+		close(c2p[0]);
 		buf[n] = '\0';
-		printf("%d: received %s\n", pid, buf);
+		printf("%d: received %s\n", getpid(), buf);
 	}
 	
 	exit(0);
